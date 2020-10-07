@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 intent = Intent(applicationContext, InfoActivity::class.java)
+             //   intent.putExtra("token", response.)
                 startActivity(intent)
             }
         }

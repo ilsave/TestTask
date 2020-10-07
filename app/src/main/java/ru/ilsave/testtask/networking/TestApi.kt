@@ -22,4 +22,10 @@ interface TestApi {
         @Body user: User
     ): Response<apiResponse>
 
+
+    @GET("https://{yourportal}.onlyoffice.eu/api/2.0/authentication")
+    suspend fun getPhoto(
+        @Header("Cookie") ascAuthKey :String
+
+    )
 }
