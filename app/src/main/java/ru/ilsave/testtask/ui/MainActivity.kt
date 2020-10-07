@@ -1,5 +1,6 @@
 package ru.ilsave.testtask.ui
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -11,6 +12,7 @@ import ru.ilsave.testtask.model.User
 import ru.ilsave.testtask.networking.RetrofitInstance
 
 class MainActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -42,6 +44,9 @@ class MainActivity : AppCompatActivity() {
                     Log.d("MainActivity", response.toString())
 
                 }
+
+                intent = Intent(applicationContext, InfoActivity::class.java)
+                startActivity(intent)
             }
         }
     }
