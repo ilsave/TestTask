@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -16,8 +17,12 @@ import com.mikepenz.materialdrawer.model.ProfileDrawerItem
 import com.mikepenz.materialdrawer.util.AbstractDrawerImageLoader
 import com.mikepenz.materialdrawer.util.DrawerImageLoader
 import com.squareup.picasso.Picasso
-import kotlinx.coroutines.runBlocking
+import kotlinx.android.synthetic.main.activity_info.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import ru.ilsave.testtask.R
+import ru.ilsave.testtask.model.UserDb
 import ru.ilsave.testtask.networking.RetrofitInstance
 
 class InfoActivity : AppCompatActivity() {
@@ -31,12 +36,39 @@ class InfoActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_info)
 
+        val userDb = intent.getSerializableExtra("user") as? UserDb
+        textView.text = userDb.toString()
+        val sharedPreference =  getSharedPreferences("PREFERENCE_NAME",Context.MODE_PRIVATE)
+        var editor = sharedPreference.edit()
+        editor.putString("access_auth",userDb?.userToken)
+        editor.apply()
+
+        GlobalScope.launch(Dispatchers.Main){
+
+            val response =  RetrofitInstance
+                .api
+                .getUserInfo("${userDb?.userPortal.toString()}.onlyoffice.eu",
+                    "asc_auth_key=${userDb?.userToken.toString()}",
+                    userDb?.userPortal.toString()
+                )
+
+            if (response.isSuccessful){
+                response.body()?.apply {
+                    this.response.firstName
+                }
+                Log.d("Response", response.toString())
+                textView.text = response.toString()
+            }
+
+        }
+
     }
 
     override fun onStart() {
         super.onStart()
         initFields()
         initFunc()
+
     }
 
     private fun initFunc() {
@@ -95,12 +127,16 @@ class InfoActivity : AppCompatActivity() {
         DrawerImageLoader.init(object : AbstractDrawerImageLoader(){
 
             override fun set(imageView: ImageView, uri: Uri, placeholder: Drawable) {
-//                runBlocking {
-//                    RetrofitInstance.api.getPhoto("asc_auth_key=" )
-//                }
+                val sharedPreference =  getSharedPreferences("PREFERENCE_NAME",Context.MODE_PRIVATE)
+                val ascAuthKey = sharedPreference.getString("access_auth","null")
+//                GlobalScope.launch(Dispatchers.Default){
+//                   val response =  RetrofitInstance.api.getPhoto("asc_auth_key={$ascAuthKey}" , "ilsave")
+//                    Log.d("InfoActivity", response.toString())
+//                 }
                 Picasso.get()
                     .load("https://ilsave.onlyoffice.eu/storage/userPhotos/root/d3874710-08d6-4ea2-973e-05e6f3208a66_size_48-48.jpeg?_=1995263857g")
-                    .placeholder(placeholder).into(imageView)
+                    .placeholder(placeholder)
+                    .into(imageView)
 
             }
         })

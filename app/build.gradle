@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 30
@@ -47,5 +48,12 @@ dependencies {
     implementation "com.mikepenz:materialdrawer-nav:7.0.0"
 
     implementation 'com.squareup.picasso:picasso:2.71828'
+
+    //navigation controller
+    implementation 'android.arch.navigation:navigation-fragment:1.0.0'
+
+    // Room
+    implementation "androidx.room:room-runtime:2.2.5"
+    kapt "androidx.room:room-compiler:2.2.5"
 
 }
