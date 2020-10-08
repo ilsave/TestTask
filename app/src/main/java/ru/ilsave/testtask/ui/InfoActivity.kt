@@ -95,9 +95,9 @@ class InfoActivity : AppCompatActivity() {
         DrawerImageLoader.init(object : AbstractDrawerImageLoader(){
 
             override fun set(imageView: ImageView, uri: Uri, placeholder: Drawable) {
-                runBlocking {
-                    RetrofitInstance.api.getPhoto("asc_auth_key=" )
-                }
+//                runBlocking {
+//                    RetrofitInstance.api.getPhoto("asc_auth_key=" )
+//                }
                 Picasso.get()
                     .load("https://ilsave.onlyoffice.eu/storage/userPhotos/root/d3874710-08d6-4ea2-973e-05e6f3208a66_size_48-48.jpeg?_=1995263857g")
                     .placeholder(placeholder).into(imageView)
