@@ -1,5 +1,6 @@
 package ru.ilsave.testtask.networking
 
+import android.graphics.Bitmap
 import retrofit2.Response
 import retrofit2.http.*
 import ru.ilsave.testtask.model.User
@@ -34,10 +35,10 @@ interface TestApi {
     ):Response<UserSefRequest>
 
 
-    @GET("https://{yourportal}.onlyoffice.eu/api/2.0/authentication")
+    @GET("https://{yourportal}.onlyoffice.eu{path}")
     suspend fun getPhoto(
         @Header("Cookie") ascAuthKey :String,
         @Path("yourportal") myportal: String,
-
-    ): String
+        @Path("path") pathImage: String
+    ): Bitmap
 }
