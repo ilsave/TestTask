@@ -51,4 +51,13 @@ interface TestApi {
         @Header("Cookie") ascAuthKey :String,
         @Path("yourportal") myportal: String
     ):Response<commonResponse>
+
+    @Headers("Content-Type: application/json",
+        "Accept: application/json")
+    @GET("https://{yourportal}.onlyoffice.eu/api/2.0/files/@common")
+    suspend fun getCommonDocuments(
+        @Header("Host") myHost: String,
+        @Header("Cookie") ascAuthKey :String,
+        @Path("yourportal") myportal: String
+    ):Response<commonResponse>
 }

@@ -31,9 +31,7 @@ import ru.ilsave.testtask.R
 import ru.ilsave.testtask.model.UserDb
 import ru.ilsave.testtask.model.UserHeaderInfo
 import ru.ilsave.testtask.networking.RetrofitInstance
-import ru.ilsave.testtask.ui.fragments.CommonFragment
 import ru.ilsave.testtask.ui.fragments.MyDocumentsFragment
-import java.io.File
 import java.io.IOException
 
 class InfoActivity : AppCompatActivity() {
@@ -150,12 +148,16 @@ class InfoActivity : AppCompatActivity() {
                                     "asc_auth_key=$ascAuthKey",
                                     host
                                 )
-                                if (response.isSuccessful){
+                                if (response.isSuccessful) {
                                     val arrayListFiles = ArrayList(response.body()?.response?.files)
-                                    val arrayListFolders = ArrayList(response.body()?.response?.folders)
+                                    val arrayListFolders =
+                                        ArrayList(response.body()?.response?.folders)
 
                                     val myDocucmentFragment =
-                                        MyDocumentsFragment.getNewInstance(arrayListFiles, arrayListFolders)
+                                        MyDocumentsFragment.getNewInstance(
+                                            arrayListFiles,
+                                            arrayListFolders
+                                        )
                                     supportFragmentManager.beginTransaction()
                                         .addToBackStack(null)
                                         .replace(
@@ -173,13 +175,43 @@ class InfoActivity : AppCompatActivity() {
                             }
 
                         }
-                        2 ->
-                            supportFragmentManager.beginTransaction()
-                                .addToBackStack(null)
-                                .replace(
-                                    R.id.frameLayout,
-                                    CommonFragment()
-                                ).commit()
+                        2 -> {
+                            GlobalScope.launch(Dispatchers.Default) {
+                                val sharedPreference =
+                                    getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
+                                val ascAuthKey = sharedPreference.getString("access_auth", "null")
+                                val host = sharedPreference.getString("host", "null").toString()
+                                val response = RetrofitInstance.api.getCommonDocuments(
+                                    "$host.onlyoffice.eu",
+                                    "asc_auth_key=$ascAuthKey",
+                                    host
+                                )
+                                if (response.isSuccessful) {
+                                    val arrayListFiles = ArrayList(response.body()?.response?.files)
+                                    val arrayListFolders =
+                                        ArrayList(response.body()?.response?.folders)
+
+                                    val CommonFragment =
+                                        MyDocumentsFragment.getNewInstance(
+                                            arrayListFiles,
+                                            arrayListFolders
+                                        )
+                                    supportFragmentManager.beginTransaction()
+                                        .addToBackStack(null)
+                                        .replace(
+                                            R.id.frameLayout,
+                                            CommonFragment
+                                        ).commit()
+                                }
+//                                    response.body()?.let {
+//                                        it.response.files.get(0)
+//
+//                                        it.response.files[0].toString()
+//
+//                                    }
+
+                            }
+                        }
 
                     }
                     return false

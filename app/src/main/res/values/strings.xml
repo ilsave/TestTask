@@ -2,4 +2,6 @@
     <string name="app_name">TestTask</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="name_my_documents">My Documents</string>
+    <string name="name_common_documents">Common Documents</string>
 </resources>
