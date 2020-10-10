@@ -33,6 +33,7 @@ import ru.ilsave.testtask.model.UserHeaderInfo
 import ru.ilsave.testtask.networking.RetrofitInstance
 import ru.ilsave.testtask.ui.fragments.CommonFragment
 import ru.ilsave.testtask.ui.fragments.MyDocumentsFragment
+import java.io.File
 import java.io.IOException
 
 class InfoActivity : AppCompatActivity() {
@@ -140,25 +141,28 @@ class InfoActivity : AppCompatActivity() {
                         //addBackStack - чтобы потом можно было вернуться в основное активити
                         1 -> {
                             GlobalScope.launch(Dispatchers.Default) {
-//                                val sharedPreference =
-//                                    getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
-//                                val ascAuthKey = sharedPreference.getString("access_auth", "null")
-//                                val host = sharedPreference.getString("host", "null").toString()
-//                                val response = RetrofitInstance.api.getMyDocuments(
-//                                    "$host.onlyoffice.eu",
-//                                    "asc_auth_key=$ascAuthKey",
-//                                    host
-//                                )
+                                val sharedPreference =
+                                    getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
+                                val ascAuthKey = sharedPreference.getString("access_auth", "null")
+                                val host = sharedPreference.getString("host", "null").toString()
+                                val response = RetrofitInstance.api.getMyDocuments(
+                                    "$host.onlyoffice.eu",
+                                    "asc_auth_key=$ascAuthKey",
+                                    host
+                                )
+                                if (response.isSuccessful){
+                                    val arrayListFiles = ArrayList(response.body()?.response?.files)
+                                    val arrayListFolders = ArrayList(response.body()?.response?.folders)
 
-
-                                val myDocucmentFragment =
-                                    MyDocumentsFragment.getNewInstance("Dowloaded!")
-                                supportFragmentManager.beginTransaction()
-                                    .addToBackStack(null)
-                                    .replace(
-                                        R.id.frameLayout,
-                                        myDocucmentFragment
-                                    ).commit()
+                                    val myDocucmentFragment =
+                                        MyDocumentsFragment.getNewInstance(arrayListFiles, arrayListFolders)
+                                    supportFragmentManager.beginTransaction()
+                                        .addToBackStack(null)
+                                        .replace(
+                                            R.id.frameLayout,
+                                            myDocucmentFragment
+                                        ).commit()
+                                }
 //                                    response.body()?.let {
 //                                        it.response.files.get(0)
 //

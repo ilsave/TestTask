@@ -2,10 +2,11 @@ package ru.ilsave.testtask.model.commonRequest
 
 
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 
 data class File(
     val access: Int,
-    val comment: Any,
+    val comment: String,
     val contentLength: String,
     val created: String,
     val createdBy: CreatedByX,
@@ -14,7 +15,7 @@ data class File(
     val fileType: Int,
     val folderId: Int,
     val id: Int,
-    val providerItem: Boolean,
+    val pureContentLength: Int,
     val rootFolderType: Int,
     val shared: Boolean,
     val title: String,
@@ -22,5 +23,6 @@ data class File(
     val updatedBy: UpdatedByX,
     val version: Int,
     val versionGroup: Int,
-    val viewUrl: String
-)
+    val viewUrl: String,
+    val webUrl: String
+): Serializable

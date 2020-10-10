@@ -2,6 +2,7 @@ package ru.ilsave.testtask.model.commonRequest
 
 
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 
 data class Folder(
     val access: Int,
@@ -11,10 +12,9 @@ data class Folder(
     val foldersCount: Int,
     val id: Int,
     val parentId: Int,
-    val providerItem: Boolean,
     val rootFolderType: Int,
     val shared: Boolean,
     val title: String,
     val updated: String,
     val updatedBy: UpdatedByXX
-)
+): Serializable

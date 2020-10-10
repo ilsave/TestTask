@@ -8,7 +8,7 @@ data class Response(
     val current: Current,
     val files: List<File>,
     val folders: List<Folder>,
-    val pathParts: PathParts,
+    val pathParts: List<Int>,
     val startIndex: Int,
     val total: Int
 )

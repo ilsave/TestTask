@@ -7,6 +7,5 @@ data class UpdatedBy(
     val avatarSmall: String,
     val displayName: String,
     val id: String,
-    val profileUrl: String,
-    val title: String
+    val profileUrl: String
 )
