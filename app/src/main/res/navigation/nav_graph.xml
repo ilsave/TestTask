@@ -7,7 +7,7 @@
 
     <activity
         android:id="@+id/mainActivity"
-        android:name="ru.ilsave.testtask.ui.MainActivity"
+        android:name="ru.ilsave.testtask.ui.activities.MainActivity"
         android:label="activity_main"
         tools:layout="@layout/activity_main" >
         <action
@@ -16,7 +16,7 @@
     </activity>
     <activity
         android:id="@+id/infoActivity"
-        android:name="ru.ilsave.testtask.ui.InfoActivity"
+        android:name="ru.ilsave.testtask.ui.activities.InfoActivity"
         android:label="activity_info"
         tools:layout="@layout/activity_info" />
 </navigation>

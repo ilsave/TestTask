@@ -4,8 +4,9 @@ import android.graphics.Bitmap
 import retrofit2.Response
 import retrofit2.http.*
 import ru.ilsave.testtask.model.User
-import ru.ilsave.testtask.model.UserSefRequest
-import ru.ilsave.testtask.model.apiResponse
+import ru.ilsave.testtask.model.selfRequest.UserSefRequest
+import ru.ilsave.testtask.model.afterLogin.apiResponse
+import ru.ilsave.testtask.model.commonRequest.commonResponse
 
 interface TestApi {
 
@@ -41,4 +42,13 @@ interface TestApi {
         @Path("yourportal") myportal: String,
         @Path("path") pathImage: String
     ): Bitmap
+
+    @Headers("Content-Type: application/json",
+        "Accept: application/json")
+    @GET("https://{yourportal}.onlyoffice.eu/api/2.0/files/@my")
+    suspend fun getMyDocuments(
+        @Header("Host") myHost: String,
+        @Header("Cookie") ascAuthKey :String,
+        @Path("yourportal") myportal: String
+    ):Response<commonResponse>
 }

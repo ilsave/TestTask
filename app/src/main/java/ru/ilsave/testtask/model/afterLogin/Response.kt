@@ -1,4 +1,4 @@
-package ru.ilsave.testtask.model
+package ru.ilsave.testtask.model.afterLogin
 
 
 import com.google.gson.annotations.SerializedName

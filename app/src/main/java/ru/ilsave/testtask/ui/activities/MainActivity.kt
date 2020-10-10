@@ -1,6 +1,5 @@
-package ru.ilsave.testtask.ui
+package ru.ilsave.testtask.ui.activities
 
-import android.accounts.AccountManager
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
