@@ -20,17 +20,28 @@ class AdapterItems(
 
     override fun onBindViewHolder(holder: ItemsHolder, position: Int) {
         val curItem = itemList[position]
+        holder.itemView.apply {
+            tvItemTitle.text = curItem.name
+            tvItemDate.text = curItem.date
+            if (curItem.isFile){
+                ivItem.setImageResource(R.drawable.ic_baseline_file_24)
+            } else {
+                ivItem.setImageResource(R.drawable.ic_baseline_folder_24)
+            }
 
-        holder.itemView.tvItemTitle.text = curItem.name
-        holder.itemView.tvItemDate.text = curItem.date
-        if (curItem.isFile){
-            holder.itemView.ivItem.setImageResource(R.drawable.ic_baseline_file_24)
-        } else {
-            holder.itemView.ivItem.setImageResource(R.drawable.ic_baseline_folder_24)
+            setOnClickListener {
+                onItemClickListener?.let {
+                    it(curItem)
+                }
+            }
         }
 
-
     }
+     private var onItemClickListener: ((AdapterPojoObject) -> Unit)? = null
+
+       fun setOnItemClickListener(listener: (AdapterPojoObject) -> Unit){
+         onItemClickListener = listener
+     }
 
     override fun getItemCount(): Int {
         return itemList.size

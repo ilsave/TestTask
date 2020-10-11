@@ -21,9 +21,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-       // val db = UserDatabase(this)
-
-
         button.setOnClickListener {
             progressBar.visibility = View.VISIBLE
             val portalName = etPortalName.text.toString()
@@ -59,11 +56,10 @@ class MainActivity : AppCompatActivity() {
                             Log.d("MainActivity", response.code().toString())
 
 
-
                         } else {
                             runOnUiThread {
                                 Toast.makeText(
-                                    applicationContext,
+                                    this@MainActivity,
                                     response.message(),
                                     Toast.LENGTH_SHORT
                                 )
@@ -80,7 +76,7 @@ class MainActivity : AppCompatActivity() {
                         response.body()?.let {
                             Log.d("MainActivity", it.response.token)
                             intent = Intent(applicationContext, InfoActivity::class.java)
-                            val userDb = UserDb(login,password,portalName, it.response.token)
+                            val userDb = UserDb(portalName, it.response.token)
                             intent.putExtra("user", userDb)
                             startActivity(intent)
                         }
@@ -89,8 +85,9 @@ class MainActivity : AppCompatActivity() {
 
                 } else {
                     runOnUiThread {
+                        progressBar.visibility = View.INVISIBLE
                         Toast.makeText(
-                            applicationContext,
+                            this,
                             "it seems you didn't enter your email address correctly ",
                             Toast.LENGTH_SHORT
                         ).show()
@@ -98,14 +95,22 @@ class MainActivity : AppCompatActivity() {
                 }
             } else {
                 runOnUiThread {
+                    progressBar.visibility = View.INVISIBLE
                     Toast.makeText(
-                        applicationContext,
+                        this,
                         "all fields should be filled! ",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
             }
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        etPortalName.setText("")
+        etLogin.setText("")
+        etPassword.setText("")
     }
 
     private fun isEmailValid(email: String): Boolean {

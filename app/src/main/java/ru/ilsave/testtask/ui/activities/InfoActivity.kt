@@ -1,6 +1,7 @@
 package ru.ilsave.testtask.ui.activities
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
@@ -13,6 +14,7 @@ import com.mikepenz.materialdrawer.AccountHeader
 import com.mikepenz.materialdrawer.AccountHeaderBuilder
 import com.mikepenz.materialdrawer.Drawer
 import com.mikepenz.materialdrawer.DrawerBuilder
+import com.mikepenz.materialdrawer.model.DividerDrawerItem
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem
 import com.mikepenz.materialdrawer.model.ProfileDrawerItem
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem
@@ -31,7 +33,7 @@ import ru.ilsave.testtask.R
 import ru.ilsave.testtask.model.UserDb
 import ru.ilsave.testtask.model.UserHeaderInfo
 import ru.ilsave.testtask.networking.RetrofitInstance
-import ru.ilsave.testtask.ui.fragments.MyDocumentsFragment
+import ru.ilsave.testtask.ui.fragments.DocumentsFragment
 import java.io.IOException
 
 class InfoActivity : AppCompatActivity() {
@@ -40,6 +42,8 @@ class InfoActivity : AppCompatActivity() {
     private lateinit var header: AccountHeader
     private lateinit var toolBar: Toolbar
     private lateinit var currentProfile: ProfileDrawerItem
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,7 +56,7 @@ class InfoActivity : AppCompatActivity() {
         editor.putString("access_auth", userDb?.userToken)
         editor.putString("host", userDb?.userPortal)
         editor.apply()
-        val userHeaderInfo: UserHeaderInfo
+        //val userHeaderInfo = UserHeaderInfo(userDb)
         //val responseX = ResponseX()
 
         GlobalScope.launch(Dispatchers.Main) {
@@ -70,14 +74,14 @@ class InfoActivity : AppCompatActivity() {
                         val sharedPreference =
                             getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
                         var editor = sharedPreference.edit()
-                        editor.putString("imageUrl", this.response.avatarMedium)
+                        editor.putString("imageUrl", this.response.avatar)
                         editor.putString(
                             "name",
                             "${this.response.firstName} ${this.response.lastName}"
                         )
                         editor.putString("email", this.response.email)
                         editor.apply()
-                        this.response.firstName
+                        //this.response.firstName
                     }
                 }
             }
@@ -93,9 +97,40 @@ class InfoActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+
         initFields()
         initFunc()
+        supportActionBar?.title = resources.getText(R.string.name_my_documents)
 
+        GlobalScope.launch(Dispatchers.Default) {
+            val sharedPreference =
+                getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
+            val ascAuthKey = sharedPreference.getString("access_auth", "null")
+            val host = sharedPreference.getString("host", "null").toString()
+            val response = RetrofitInstance.api.getMyDocuments(
+                "$host.onlyoffice.eu",
+                "asc_auth_key=$ascAuthKey",
+                host
+            )
+            if (response.isSuccessful) {
+                val arrayListFiles = ArrayList(response.body()?.response?.files)
+                val arrayListFolders =
+                    ArrayList(response.body()?.response?.folders)
+
+                val myDocucmentFragment =
+                    DocumentsFragment.getNewInstance(
+                        arrayListFiles,
+                        arrayListFolders,
+                        UserDb(host,ascAuthKey!!)
+                    )
+                supportFragmentManager.beginTransaction()
+                    .addToBackStack(null)
+                    .replace(
+                        R.id.frameLayout,
+                        myDocucmentFragment
+                    ).commit()
+            }
+        }
     }
 
     private fun initFunc() {
@@ -123,6 +158,12 @@ class InfoActivity : AppCompatActivity() {
                     .withName("Common documents")
                     .withIcon(R.drawable.ic_baseline_folder_24)
                     .withSelectable(false),
+                DividerDrawerItem(),
+                PrimaryDrawerItem().withIdentifier(102)
+                    .withIconTintingEnabled(true)
+                    .withName("Log out")
+                    .withIcon(R.drawable.ic_baseline_arrow_exit_24)
+                    .withSelectable(false),
             ).withOnDrawerItemClickListener(object : Drawer.OnDrawerItemClickListener {
 
                 //функция нажатия на че нить из нашего drawer\а
@@ -131,13 +172,13 @@ class InfoActivity : AppCompatActivity() {
                     position: Int,
                     drawerItem: IDrawerItem<*>
                 ): Boolean {
-                    Toast.makeText(applicationContext, position.toString(), Toast.LENGTH_SHORT)
-                        .show()
                     //getapplicationContext потому что мы находимся в кликере (this если в самой активности как я понял)
 
                     when (position) {
                         //addBackStack - чтобы потом можно было вернуться в основное активити
                         1 -> {
+                            supportActionBar?.title = resources.getText(R.string.name_my_documents)
+
                             GlobalScope.launch(Dispatchers.Default) {
                                 val sharedPreference =
                                     getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
@@ -154,9 +195,10 @@ class InfoActivity : AppCompatActivity() {
                                         ArrayList(response.body()?.response?.folders)
 
                                     val myDocucmentFragment =
-                                        MyDocumentsFragment.getNewInstance(
+                                        DocumentsFragment.getNewInstance(
                                             arrayListFiles,
-                                            arrayListFolders
+                                            arrayListFolders,
+                                            UserDb(host,ascAuthKey!!)
                                         )
                                     supportFragmentManager.beginTransaction()
                                         .addToBackStack(null)
@@ -165,17 +207,12 @@ class InfoActivity : AppCompatActivity() {
                                             myDocucmentFragment
                                         ).commit()
                                 }
-//                                    response.body()?.let {
-//                                        it.response.files.get(0)
-//
-//                                        it.response.files[0].toString()
-//
-//                                    }
 
                             }
 
                         }
                         2 -> {
+                            supportActionBar?.title = resources.getText(R.string.name_common_documents)
                             GlobalScope.launch(Dispatchers.Default) {
                                 val sharedPreference =
                                     getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
@@ -191,29 +228,32 @@ class InfoActivity : AppCompatActivity() {
                                     val arrayListFolders =
                                         ArrayList(response.body()?.response?.folders)
 
-                                    val CommonFragment =
-                                        MyDocumentsFragment.getNewInstance(
+                                    val myDocucmentFragment =
+                                        DocumentsFragment.getNewInstance(
                                             arrayListFiles,
-                                            arrayListFolders
+                                            arrayListFolders,
+                                            UserDb(host,ascAuthKey!!)
                                         )
                                     supportFragmentManager.beginTransaction()
                                         .addToBackStack(null)
                                         .replace(
                                             R.id.frameLayout,
-                                            CommonFragment
+                                            myDocucmentFragment
                                         ).commit()
                                 }
-//                                    response.body()?.let {
-//                                        it.response.files.get(0)
-//
-//                                        it.response.files[0].toString()
-//
-//                                    }
-
                             }
+                        }
+                        4 -> {
+                            intent = Intent(applicationContext, MainActivity::class.java)
+                            startActivity(intent)
                         }
 
                     }
+//                    val sharedPreference =
+//                        getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
+//                    var editor = sharedPreference.edit()
+//                    editor.clear()
+//                    editor.apply()
                     return false
                 }
             }).build()
@@ -255,12 +295,7 @@ class InfoActivity : AppCompatActivity() {
                 val sharedPreference = getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
                 val ascAuthKey = sharedPreference.getString("access_auth", "null")
                 val pathImage = sharedPreference.getString("imageUrl", "imageurl")
-
-//                GlobalScope.launch(Dispatchers.Default){
-//                   val response =  RetrofitInstance.api.getPhoto("asc_auth_key={$ascAuthKey}" , "ilsave", pathImage!!)
-//                    Log.d("ImageInfoActivity", response.toString())
-//
-//                 }
+                val host = sharedPreference.getString("host", "host")
 
                 val client: OkHttpClient = OkHttpClient.Builder()
                     .addInterceptor(object : Interceptor {
@@ -269,7 +304,7 @@ class InfoActivity : AppCompatActivity() {
                             val newRequest: Request = chain.request().newBuilder()
                                 .addHeader(
                                     "Cookie",
-                                    "asc_auth_key=OB0UZ5R66IyWtetJJQJ8Z52lcW1wODXYtOIvAbSLJG2EWuGAMxhXgyjWYrw/iRaSoEaqO70yLrJtOVmYRzWPgv8/yK/1IS/aX7NA4zuG3dySsoFrjypccBKLbNTbU/vBQshZd+BSVmd2t3SlTN09jaADZlDZcGilsLGPRpdEjN4=; tmtalk=ver:2.0::sndbyctrlentr:1::sid:0::hidscd:1; socketio.sid=s%3Ar2T3T3C5-fyzXS0-dfuCJuW7VJwbgyAw.f3krPSz7TZQ9j2xHX9QhL5%2Bgy2JOzo4ZatZcmKKRC%2Fo; is_retina=true; ASP.NET_SessionId=4ypsip5zfvm5vkqrzxtba503"
+                                    "asc_auth_key=$ascAuthKey"
                                 )
                                 .build()
                             return chain.proceed(newRequest)
@@ -281,9 +316,10 @@ class InfoActivity : AppCompatActivity() {
                     .downloader(OkHttp3Downloader(client))
                     .build()
 
+                var url = "https://$host.onlyoffice.eu$pathImage"
 
                 picasso
-                    .load("https://ilsave.onlyoffice.eu/storage/userPhotos/root/d3874710-08d6-4ea2-973e-05e6f3208a66_size_82-82.jpeg?_=1995263857")
+                    .load(url)
                     .into(imageView)
             }
         })
