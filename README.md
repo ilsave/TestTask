@@ -5,4 +5,4 @@
 
 ## I have done:
  - Shy navigation
- - All the other quired tasks
+ - All the other required tasks
