@@ -56,41 +56,6 @@ class InfoActivity : AppCompatActivity() {
         editor.putString("access_auth", userDb?.userToken)
         editor.putString("host", userDb?.userPortal)
         editor.apply()
-        //val userHeaderInfo = UserHeaderInfo(userDb)
-        //val responseX = ResponseX()
-
-        GlobalScope.launch(Dispatchers.Main) {
-
-            val job = GlobalScope.launch(Dispatchers.IO) {
-                val response = RetrofitInstance
-                    .api
-                    .getUserInfo(
-                        "${userDb?.userPortal.toString()}.onlyoffice.eu",
-                        "asc_auth_key=${userDb?.userToken.toString()}",
-                        userDb?.userPortal.toString()
-                    )
-                if (response.isSuccessful) {
-                    response.body()?.apply {
-                        val sharedPreference =
-                            getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
-                        var editor = sharedPreference.edit()
-                        editor.putString("imageUrl", this.response.avatar)
-                        editor.putString(
-                            "name",
-                            "${this.response.firstName} ${this.response.lastName}"
-                        )
-                        editor.putString("email", this.response.email)
-                        editor.apply()
-                        //this.response.firstName
-                    }
-                }
-            }
-            job.join()
-//             //   Log.d("Response", response.toString())
-//                textView.text = response.toString()
-//            }
-
-        }
 
 
     }
@@ -249,11 +214,7 @@ class InfoActivity : AppCompatActivity() {
                         }
 
                     }
-//                    val sharedPreference =
-//                        getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
-//                    var editor = sharedPreference.edit()
-//                    editor.clear()
-//                    editor.apply()
+
                     return false
                 }
             }).build()
@@ -281,12 +242,7 @@ class InfoActivity : AppCompatActivity() {
     }
 
 
-    fun ImageView.downloadandSetImage(url: String) {
-        Picasso.get()
-            .load(url)
-            .placeholder(R.drawable.ic_baseline_folder_24)
-            .into(this)
-    }
+
 
     private fun initLoader() {
         DrawerImageLoader.init(object : AbstractDrawerImageLoader() {

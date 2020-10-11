@@ -1,5 +1,6 @@
 package ru.ilsave.testtask.ui.activities
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -48,13 +49,6 @@ class MainActivity : AppCompatActivity() {
                                 )
                                     .show()
                             }
-                            Log.d("MainActivity", response.message())
-                            Log.d("MainActivity", response.body().toString())
-                            Log.d("MainActivity", response.toString())
-                            Log.d("MainActivity", response.raw().toString())
-                            Log.d("MainActivity", response.errorBody().toString())
-                            Log.d("MainActivity", response.code().toString())
-
 
                         } else {
                             runOnUiThread {
@@ -65,16 +59,40 @@ class MainActivity : AppCompatActivity() {
                                 )
                                     .show()
                             }
-                            Log.d("MainActivity", response.message())
-                            Log.d("MainActivity", response.body().toString())
-                            Log.d("MainActivity", response.toString())
-
                         }
                         runOnUiThread {
                             progressBar.visibility = View.INVISIBLE
                         }
                         response.body()?.let {
                             Log.d("MainActivity", it.response.token)
+
+                            val response = RetrofitInstance
+                                .api
+                                .getUserInfo(
+                                    "${portalName}.onlyoffice.eu",
+                                    "asc_auth_key=${it.response.token}",
+                                    portalName
+                                )
+                            if (response.isSuccessful) {
+                                response.body()?.apply {
+                                    val sharedPreference =
+                                        getSharedPreferences(
+                                            "PREFERENCE_NAME",
+                                            Context.MODE_PRIVATE
+                                        )
+                                    var editor = sharedPreference.edit()
+                                    editor.putString("imageUrl", this.response.avatar)
+                                    editor.putString(
+                                        "name",
+                                        "${this.response.firstName} ${this.response.lastName}"
+                                    )
+                                    editor.putString("email", this.response.email)
+                                    editor.apply()
+                                    //this.response.firstName
+                                }
+                            }
+
+
                             intent = Intent(applicationContext, InfoActivity::class.java)
                             val userDb = UserDb(portalName, it.response.token)
                             intent.putExtra("user", userDb)

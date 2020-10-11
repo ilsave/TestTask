@@ -7,7 +7,7 @@ import java.io.Serializable
 data class Folder(
     val access: Int,
     val created: String,
-    val createdBy: CreatedByXX,
+   // val createdBy: CreatedByXX,
     val filesCount: Int,
     val foldersCount: Int,
     val id: Int,
@@ -16,5 +16,5 @@ data class Folder(
     val shared: Boolean,
     val title: String,
     val updated: String,
-    val updatedBy: UpdatedByXX
+    // val updatedBy: UpdatedByXX
 ): Serializable
