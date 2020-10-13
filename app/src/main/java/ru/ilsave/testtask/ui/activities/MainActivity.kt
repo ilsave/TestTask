@@ -33,6 +33,7 @@ class MainActivity : AppCompatActivity() {
                 && password.trim().isNotEmpty()
             ) {
                 if (isEmailValid(login)) {
+
                     GlobalScope.launch(Dispatchers.Default) {
                         val base_url = "https://${portalName}.onlyoffice.eu"
                         val response = RetrofitInstance.api.pushUser2(
@@ -102,17 +103,16 @@ class MainActivity : AppCompatActivity() {
                     }
 
                 } else {
-                    runOnUiThread {
+
                         progressBar.visibility = View.INVISIBLE
                         Toast.makeText(
                             this,
                             "it seems you didn't enter your email address correctly ",
                             Toast.LENGTH_SHORT
                         ).show()
-                    }
+
                 }
             } else {
-                runOnUiThread {
                     progressBar.visibility = View.INVISIBLE
                     Toast.makeText(
                         this,
@@ -120,8 +120,9 @@ class MainActivity : AppCompatActivity() {
                         Toast.LENGTH_SHORT
                     ).show()
                 }
-            }
+
         }
+
     }
 
     override fun onStop() {
