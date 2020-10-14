@@ -15,14 +15,21 @@ import ru.ilsave.testtask.R
 import ru.ilsave.testtask.model.User
 import ru.ilsave.testtask.model.UserDb
 import ru.ilsave.testtask.networking.RetrofitInstance
+import ru.ilsave.testtask.presenter.MainContract
+import ru.ilsave.testtask.presenter.Presenter
+import ru.ilsave.testtask.presenter.Repository
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), MainContract.View {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        val repository: MainContract.Presenter
+        val mPresenter = Presenter(this)
+
 
         button.setOnClickListener {
+            mPresenter.onButtonWasClicked()
             progressBar.visibility = View.VISIBLE
             val portalName = etPortalName.text.toString()
             val login = etLogin.text.toString()
@@ -134,5 +141,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun isEmailValid(email: String): Boolean {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    }
+
+    override fun showText() {
+        Toast.makeText(this, "Юху", Toast.LENGTH_LONG).show()
     }
 }
