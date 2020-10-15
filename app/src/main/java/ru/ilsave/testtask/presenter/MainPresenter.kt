@@ -9,7 +9,8 @@ import ru.ilsave.testtask.model.User
 import ru.ilsave.testtask.model.UserDb
 import ru.ilsave.testtask.networking.RetrofitInstance
 
-class MainPresenter(val mView: MainContract.View) : MainContract.Presenter {
+class MainPresenter(val mView: MainContract.MainPresenter) :
+    MainContract.MainPresenter {
 
     val TAG = "Presenter"
 
@@ -96,12 +97,27 @@ class MainPresenter(val mView: MainContract.View) : MainContract.Presenter {
 
     }
 
+    override fun navigationtoNextScreen(userDb: UserDb) {
+        mView.navigationtoNextScreen(userDb)
+    }
+
     private fun isEmailValid(email: String): Boolean {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
     override fun onDestroy() {
         Log.d(TAG, "onDestroyd")
+    }
 
+    override fun showText(message: String) {
+        mView.showText(message)
+    }
+
+    override fun progressBarToVisible() {
+        mView.progressBarToVisible()
+    }
+
+    override fun progressBarToINvisible() {
+        mView.progressBarToINvisible()
     }
 }

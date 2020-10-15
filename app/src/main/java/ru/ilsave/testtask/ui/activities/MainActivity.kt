@@ -2,6 +2,7 @@ package ru.ilsave.testtask.ui.activities
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -12,13 +13,16 @@ import ru.ilsave.testtask.model.UserDb
 import ru.ilsave.testtask.presenter.MainContract
 import ru.ilsave.testtask.presenter.MainPresenter
 
-class MainActivity : AppCompatActivity(), MainContract.View {
+class MainActivity : AppCompatActivity(), MainContract.MainPresenter {
+
+    private var mPresenter: MainPresenter? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val repository: MainContract.Presenter
-        val mPresenter = MainPresenter(this)
+        val repository: MainContract.MainPresenter
+        val mPresenter = MainPresenter( this)
 
 
         button.setOnClickListener {
@@ -132,6 +136,10 @@ class MainActivity : AppCompatActivity(), MainContract.View {
 
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        mPresenter = null
+    }
 
     override fun onStop() {
         super.onStop()
@@ -140,12 +148,18 @@ class MainActivity : AppCompatActivity(), MainContract.View {
         etPassword.setText("")
     }
 
-    private fun isEmailValid(email: String): Boolean {
-        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
-    }
 
     override fun showText(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+    }
+
+    override fun onButtonWasClicked(
+        portalName: String,
+        login: String,
+        password: String,
+        sharedPreferences: SharedPreferences
+    ) {
+        mPresenter?.onButtonWasClicked(portalName, login, password, sharedPreferences)
     }
 
     override fun navigationtoNextScreen(userDb: UserDb) {
