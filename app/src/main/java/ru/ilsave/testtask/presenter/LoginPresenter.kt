@@ -7,10 +7,9 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import ru.ilsave.testtask.model.User
 import ru.ilsave.testtask.model.UserDb
-import ru.ilsave.testtask.networking.RetrofitInstance
 
-class MainPresenter(val mView: MainContract.MainPresenter) :
-    MainContract.MainPresenter {
+class LoginPresenter(val mView: MainContract.LoginView) :
+    MainContract.MainPresenter   {
 
     val TAG = "Presenter"
 
@@ -25,7 +24,7 @@ class MainPresenter(val mView: MainContract.MainPresenter) :
     ) {
         Log.d(TAG, "Presenter clicked")
         // mView.showText()
-        repository.onLoad()
+        //repository.onLoad()
 
         mView.progressBarToVisible()
 
@@ -36,12 +35,14 @@ class MainPresenter(val mView: MainContract.MainPresenter) :
             if (isEmailValid(login)) {
 
                 GlobalScope.launch(Dispatchers.Default) {
-                    val base_url = "https://${portalName}.onlyoffice.eu"
-                    val response = RetrofitInstance.api.pushUser2(
-                        "${portalName}.onlyoffice.eu",
+
+                    var myHost = "${portalName}.onlyoffice.eu"
+                    var response = repository.callPushUser(
+                        myHost,
                         portalName,
                         User(login, password)
                     )
+
                     if (response.isSuccessful) {
                         launch(Dispatchers.Main) {
                             mView.showText(response.message())
@@ -56,16 +57,13 @@ class MainPresenter(val mView: MainContract.MainPresenter) :
 
                     response.body()?.let {
                         Log.d("MainActivity", it.response.token)
+                        val ascKey = "asc_auth_key=${it.response.token}"
+                        val responseCallUserInfo = repository.callGetUserInfo(myHost,
+                            ascKey,
+                            portalName)
 
-                        val response = RetrofitInstance
-                            .api
-                            .getUserInfo(
-                                "${portalName}.onlyoffice.eu",
-                                "asc_auth_key=${it.response.token}",
-                                portalName
-                            )
-                        if (response.isSuccessful) {
-                            response.body()?.apply {
+                        if (responseCallUserInfo.isSuccessful) {
+                            responseCallUserInfo.body()?.apply {
                                 var editor = sharedpref.edit()
                                 editor.putString("imageUrl", this.response.avatar)
                                 editor.putString(
@@ -79,7 +77,8 @@ class MainPresenter(val mView: MainContract.MainPresenter) :
                         }
 
                         val userDb = UserDb(portalName, it.response.token)
-                        mView.navigationtoNextScreen(userDb)
+                        navigationToNextScreen(userDb)
+                      //  mView.navigationToNextScreen(userDb)
 
                     }
 
@@ -97,9 +96,6 @@ class MainPresenter(val mView: MainContract.MainPresenter) :
 
     }
 
-    override fun navigationtoNextScreen(userDb: UserDb) {
-        mView.navigationtoNextScreen(userDb)
-    }
 
     private fun isEmailValid(email: String): Boolean {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
@@ -107,6 +103,10 @@ class MainPresenter(val mView: MainContract.MainPresenter) :
 
     override fun onDestroy() {
         Log.d(TAG, "onDestroyd")
+    }
+
+    override fun navigationToNextScreen(userDb: UserDb) {
+        mView.navigationToNextScreen(userDb)
     }
 
     override fun showText(message: String) {

@@ -13,7 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppThemeLight">
         <activity android:name=".ui.activities.InfoActivity"></activity>
-        <activity android:name=".ui.activities.MainActivity">
+        <activity android:name=".ui.activities.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

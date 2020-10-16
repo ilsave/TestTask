@@ -2,27 +2,31 @@ package ru.ilsave.testtask.ui.activities
 
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_login.*
 import ru.ilsave.testtask.R
 import ru.ilsave.testtask.model.UserDb
 import ru.ilsave.testtask.presenter.MainContract
-import ru.ilsave.testtask.presenter.MainPresenter
+import ru.ilsave.testtask.presenter.LoginPresenter
 
-class MainActivity : AppCompatActivity(), MainContract.MainPresenter {
+class LoginActivity : AppCompatActivity(), MainContract.LoginView {
 
-    private var mPresenter: MainPresenter? = null
+    private var mPresenter: LoginPresenter? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_login)
         val repository: MainContract.MainPresenter
-        val mPresenter = MainPresenter( this)
+        val sharedPreference =
+            getSharedPreferences(
+                "PREFERENCE_NAME",
+                Context.MODE_PRIVATE
+            )
+        val mPresenter = LoginPresenter( this)
 
 
         button.setOnClickListener {
@@ -148,26 +152,20 @@ class MainActivity : AppCompatActivity(), MainContract.MainPresenter {
         etPassword.setText("")
     }
 
+    override fun navigationToNextScreen(userDb: UserDb) {
+        intent = Intent(applicationContext, InfoActivity::class.java)
+        // val userDb = UserDb(portalName, it.response.token)
+        intent.putExtra("user", userDb)
+        startActivity(intent)
+    }
+
 
     override fun showText(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
-    override fun onButtonWasClicked(
-        portalName: String,
-        login: String,
-        password: String,
-        sharedPreferences: SharedPreferences
-    ) {
-        mPresenter?.onButtonWasClicked(portalName, login, password, sharedPreferences)
-    }
 
-    override fun navigationtoNextScreen(userDb: UserDb) {
-        intent = Intent(applicationContext, InfoActivity::class.java)
-       // val userDb = UserDb(portalName, it.response.token)
-        intent.putExtra("user", userDb)
-        startActivity(intent)
-    }
+
 
     override fun progressBarToVisible() {
         progressBar.visibility = View.VISIBLE

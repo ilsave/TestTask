@@ -7,9 +7,9 @@
 
     <activity
         android:id="@+id/mainActivity"
-        android:name="ru.ilsave.testtask.ui.activities.MainActivity"
+        android:name="ru.ilsave.testtask.ui.activities.LoginActivity"
         android:label="activity_main"
-        tools:layout="@layout/activity_main" >
+        tools:layout="@layout/activity_login" >
         <action
             android:id="@+id/action_mainActivity_to_infoActivity"
             app:destination="@id/infoActivity" />

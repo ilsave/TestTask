@@ -1,14 +1,22 @@
 package ru.ilsave.testtask.presenter
 
-import android.util.Log
+import retrofit2.Response
+import ru.ilsave.testtask.model.User
+import ru.ilsave.testtask.model.commonRequest.commonResponse
+import ru.ilsave.testtask.networking.RetrofitInstance
 
-class Repository(): MainContract.Repository {
+class Repository() : MainContract.Repository {
 
-    val TAG = "Repository"
+    override suspend fun callPushUser(myHost: String, myportal: String, user: User) =
+        RetrofitInstance.api.pushUser2(myHost, myportal, user)
 
-    override fun onLoad() {
-        Log.d(TAG,  "Reposity fun called")
-    }
+    override suspend fun callGetUserInfo(myHost: String, ascAuthKey: String, myportal: String) =
+        RetrofitInstance.api.getUserInfo(myHost, ascAuthKey, myportal)
+
+    override suspend fun callGetMyDocuments(myHost: String, ascAuthKey: String, myportal: String ) =
+        RetrofitInstance.api.getMyDocuments(myHost, ascAuthKey, myportal)
+
+
 
 
 }

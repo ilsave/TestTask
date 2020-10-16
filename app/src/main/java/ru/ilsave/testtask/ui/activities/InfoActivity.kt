@@ -7,7 +7,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.mikepenz.materialdrawer.AccountHeader
@@ -31,27 +30,33 @@ import okhttp3.Request
 import okhttp3.Response
 import ru.ilsave.testtask.R
 import ru.ilsave.testtask.model.UserDb
-import ru.ilsave.testtask.model.UserHeaderInfo
 import ru.ilsave.testtask.networking.RetrofitInstance
+import ru.ilsave.testtask.presenter.InfoPresenter
+import ru.ilsave.testtask.presenter.MainContract
 import ru.ilsave.testtask.ui.fragments.DocumentsFragment
 import java.io.IOException
 
-class InfoActivity : AppCompatActivity() {
+class InfoActivity : AppCompatActivity() , MainContract.InfoView {
 
     private lateinit var drawer: Drawer
     private lateinit var header: AccountHeader
     private lateinit var toolBar: Toolbar
     private lateinit var currentProfile: ProfileDrawerItem
 
+    private var mPresenter: InfoPresenter? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_info)
 
+        val sharedPreference = getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
+
+        mPresenter = InfoPresenter(this, sharedPreference)
+
+
         val userDb = intent.getSerializableExtra("user") as? UserDb
         //textView.text = userDb.toString()
-        val sharedPreference = getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
         var editor = sharedPreference.edit()
         editor.putString("access_auth", userDb?.userToken)
         editor.putString("host", userDb?.userPortal)
@@ -143,37 +148,37 @@ class InfoActivity : AppCompatActivity() {
                         //addBackStack - чтобы потом можно было вернуться в основное активити
                         1 -> {
                             supportActionBar?.title = resources.getText(R.string.name_my_documents)
+                            mPresenter?.navigationPresenterToMyDocuments()
+//                            GlobalScope.launch(Dispatchers.Default) {
+//                                val sharedPreference =
+//                                    getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
+//                                val ascAuthKey = sharedPreference.getString("access_auth", "null")
+//                                val host = sharedPreference.getString("host", "null").toString()
+//                                val response = RetrofitInstance.api.getMyDocuments(
+//                                    "$host.onlyoffice.eu",
+//                                    "asc_auth_key=$ascAuthKey",
+//                                    host
+//                                )
+//                                if (response.isSuccessful) {
+//                                    val arrayListFiles = ArrayList(response.body()?.response?.files)
+//                                    val arrayListFolders =
+//                                        ArrayList(response.body()?.response?.folders)
+//
+//                                    val myDocucmentFragment =
+//                                        DocumentsFragment.getNewInstance(
+//                                            arrayListFiles,
+//                                            arrayListFolders,
+//                                            UserDb(host,ascAuthKey!!)
+//                                        )
+//                                    supportFragmentManager.beginTransaction()
+//                                        .addToBackStack(null)
+//                                        .replace(
+//                                            R.id.frameLayout,
+//                                            myDocucmentFragment
+//                                        ).commit()
+//                                }
 
-                            GlobalScope.launch(Dispatchers.Default) {
-                                val sharedPreference =
-                                    getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
-                                val ascAuthKey = sharedPreference.getString("access_auth", "null")
-                                val host = sharedPreference.getString("host", "null").toString()
-                                val response = RetrofitInstance.api.getMyDocuments(
-                                    "$host.onlyoffice.eu",
-                                    "asc_auth_key=$ascAuthKey",
-                                    host
-                                )
-                                if (response.isSuccessful) {
-                                    val arrayListFiles = ArrayList(response.body()?.response?.files)
-                                    val arrayListFolders =
-                                        ArrayList(response.body()?.response?.folders)
-
-                                    val myDocucmentFragment =
-                                        DocumentsFragment.getNewInstance(
-                                            arrayListFiles,
-                                            arrayListFolders,
-                                            UserDb(host,ascAuthKey!!)
-                                        )
-                                    supportFragmentManager.beginTransaction()
-                                        .addToBackStack(null)
-                                        .replace(
-                                            R.id.frameLayout,
-                                            myDocucmentFragment
-                                        ).commit()
-                                }
-
-                            }
+ //                           }
 
                         }
                         2 -> {
@@ -209,7 +214,7 @@ class InfoActivity : AppCompatActivity() {
                             }
                         }
                         4 -> {
-                            intent = Intent(applicationContext, MainActivity::class.java)
+                            intent = Intent(applicationContext, LoginActivity::class.java)
                             startActivity(intent)
                         }
 
@@ -220,7 +225,12 @@ class InfoActivity : AppCompatActivity() {
             }).build()
     }
 
+
+
     private fun createHeader() {
+
+       // mPresenter?.createHeader()
+
         val sharedPreference = getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
         val ascAuthKey = sharedPreference.getString("access_auth", "null")
         val name = sharedPreference.getString("name", "name")
@@ -241,9 +251,11 @@ class InfoActivity : AppCompatActivity() {
             ).build()
     }
 
-
-
-
+//    override fun startSelf() {
+//        TODO("Not yet implemented")
+//    }
+//
+//
     private fun initLoader() {
         DrawerImageLoader.init(object : AbstractDrawerImageLoader() {
 
@@ -281,7 +293,35 @@ class InfoActivity : AppCompatActivity() {
         })
     }
 
+
     private fun initFields() {
         toolBar = findViewById(R.id.mainToolbar)
+    }
+
+    override fun navigationToLoginScreen() {
+
+    }
+
+    override fun navigationToMyDocuments(documentsFragment: DocumentsFragment) {
+        supportFragmentManager.beginTransaction()
+            .addToBackStack(null)
+            .replace(
+                R.id.frameLayout,
+                documentsFragment
+            ).commit()
+    }
+
+    //знаю, что можно избежать дублирования кода, но решил оставить, чтобы не запутаться
+    override fun navigationToCommonDocuments(documentsFragment: DocumentsFragment) {
+        supportFragmentManager.beginTransaction()
+            .addToBackStack(null)
+            .replace(
+                R.id.frameLayout,
+                documentsFragment
+            ).commit()
+    }
+
+    override fun showText(message: String) {
+        TODO("Not yet implemented")
     }
 }
