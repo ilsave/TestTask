@@ -164,9 +164,6 @@ class LoginActivity : AppCompatActivity(), MainContract.LoginView {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
-
-
-
     override fun progressBarToVisible() {
         progressBar.visibility = View.VISIBLE
     }
@@ -174,4 +171,6 @@ class LoginActivity : AppCompatActivity(), MainContract.LoginView {
     override fun progressBarToINvisible() {
         progressBar.visibility = View.INVISIBLE
     }
+
+
 }

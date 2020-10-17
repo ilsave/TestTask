@@ -36,42 +36,72 @@ class InfoPresenter(var mView: MainContract.InfoView, var shared: SharedPreferen
                         arrayListFolders,
                         UserDb(host,ascAuthKey!!)
                     )
-                navigationToMyDocuments(myDocucmentFragment)
+                mView.navigationToMyDocuments(myDocucmentFragment)
 
-//                supportFragmentManager.beginTransaction()
-//                    .addToBackStack(null)
-//                    .replace(
-//                        R.id.frameLayout,
-//                        myDocucmentFragment
-//                    ).commit()
             }
 
         }
     }
 
-    override fun createCustomPicasso() {
-        TODO("Not yet implemented")
+    override fun navigationPresenterToCommonDocuments() {
+        GlobalScope.launch(Dispatchers.Default) {
+
+            val ascAuthKey = shared.getString("access_auth", "null")
+            val host = shared.getString("host", "null").toString()
+            var myHost = "$host.onlyoffice.eu"
+            var myKey = "asc_auth_key=$ascAuthKey"
+            val response = repository.callGetCommonDocuments(myHost, myKey, host)
+
+            if (response.isSuccessful) {
+                val arrayListFiles = ArrayList(response.body()?.response?.files)
+                val arrayListFolders =
+                    ArrayList(response.body()?.response?.folders)
+
+                val myDocucmentFragment =
+                    DocumentsFragment.getNewInstance(
+                        arrayListFiles,
+                        arrayListFolders,
+                        UserDb(host,ascAuthKey!!)
+                    )
+
+                mView.navigationToMyDocuments(myDocucmentFragment)
+
+
+            }
+        }
+    }
+    override fun start() {
+        GlobalScope.launch(Dispatchers.Default) {
+
+            val ascAuthKey = shared.getString("access_auth", "null")
+            val myportal = shared.getString("host", "null").toString()
+            val myHost = "$myportal.onlyoffice.eu"
+            val myKey = "asc_auth_key=$ascAuthKey"
+            val response = repository.callGetMyDocuments(myHost, myKey, myportal)
+
+            if (response.isSuccessful) {
+                val arrayListFiles = ArrayList(response.body()?.response?.files)
+                val arrayListFolders =
+                    ArrayList(response.body()?.response?.folders)
+
+                val myDocucmentFragment =
+                    DocumentsFragment.getNewInstance(
+                        arrayListFiles,
+                        arrayListFolders,
+                        UserDb(myportal,ascAuthKey!!)
+                    )
+                mView.navigationToMyDocuments(myDocucmentFragment)
+
+            }
+        }
     }
 
-    override fun onDestroy() {
-        TODO("Not yet implemented")
-    }
 
-    override fun navigationToLoginScreen() {
-        TODO("Not yet implemented")
-    }
 
-    override fun navigationToMyDocuments(documentsFragment: DocumentsFragment) {
-        mView.navigationToMyDocuments(documentsFragment)
-    }
 
-    override fun navigationToCommonDocuments(documentsFragment: DocumentsFragment) {
-        TODO("Not yet implemented")
-    }
 
-    override fun showText(message: String) {
-        TODO("Not yet implemented")
-    }
+
+
 
 
 }

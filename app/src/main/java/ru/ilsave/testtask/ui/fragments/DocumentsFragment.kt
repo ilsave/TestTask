@@ -1,7 +1,7 @@
 package ru.ilsave.testtask.ui.fragments
 
-import android.content.Context
 import android.os.Bundle
+import android.provider.SyncStateContract.Helpers.update
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -10,30 +10,26 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_mydoc.view.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import ru.ilsave.testtask.R
 import ru.ilsave.testtask.model.UserDb
 import ru.ilsave.testtask.model.commonRequest.File
 import ru.ilsave.testtask.model.commonRequest.Folder
-import ru.ilsave.testtask.networking.RetrofitInstance
+import ru.ilsave.testtask.presenter.FragmentPresenter
+import ru.ilsave.testtask.presenter.MainContract
 import ru.ilsave.testtask.ui.activities.InfoActivity
 import ru.ilsave.testtask.ui.adapter.AdapterItems
 import ru.ilsave.testtask.ui.adapter.AdapterPojoObject
 
 
-class DocumentsFragment : Fragment() {
+class DocumentsFragment : Fragment(), MainContract.DocumentsFragmentView {
+
+
+    lateinit var adapterList: ArrayList<AdapterPojoObject>
+    lateinit var itemAdapter: AdapterItems
+
+    var mPresenter: FragmentPresenter? = null
 
     companion object {
-        fun getNewInstance(line: String): DocumentsFragment {
-            val myDocumentsFragment = DocumentsFragment()
-            val args = Bundle()
-            args.putString("line", line)
-            myDocumentsFragment.arguments = args
-            return myDocumentsFragment
-        }
-
         fun getNewInstance(
             listFiles: ArrayList<File>,
             listFolders: ArrayList<Folder>,
@@ -52,7 +48,6 @@ class DocumentsFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
     }
 
 
@@ -68,14 +63,16 @@ class DocumentsFragment : Fragment() {
         var listFiles = arguments?.getSerializable("listFiles") as List<File>
         var listFolders = arguments?.getSerializable("listFolders") as List<Folder>
 
-        val adapterList = ArrayList<AdapterPojoObject>()
+        mPresenter = FragmentPresenter(this)
+
+        adapterList = ArrayList<AdapterPojoObject>()
         for (file in listFiles) {
             adapterList.add(
                 AdapterPojoObject(
                     file.title,
                     false,
                     true,
-                    dateMonth(file.created.substring(0, 10)),
+                    mPresenter!!.dateMonth(file.created.substring(0, 10)),
                     file.contentLength,
                     "none"
                 )
@@ -87,101 +84,65 @@ class DocumentsFragment : Fragment() {
                     file.title,
                     true,
                     false,
-                    dateMonth(file.created.substring(0, 10)),
+                    mPresenter!!.dateMonth(file.created.substring(0, 10)),
                     file.filesCount.toString(),
                     file.id.toString()
                 )
             )
         }
-        var itemAdapter = AdapterItems(adapterList)
+
+        itemAdapter = AdapterItems(adapterList)
         view.rvItems.layoutManager = LinearLayoutManager(view.context)
         view.rvItems.adapter = itemAdapter
+
+
         itemAdapter.setOnItemClickListener {
             if (it.isFile) {
                 Toast.makeText(view.context, "${it.name} file size: ${it.size}", Toast.LENGTH_SHORT)
                     .show()
             } else {
                 var userDb = arguments?.getSerializable("userDb") as UserDb
-                GlobalScope.launch(Dispatchers.Default) {
-                    val response = RetrofitInstance.api.getFolderDocuments(
-                        "${userDb.userPortal}.onlyoffice.eu",
-                        "asc_auth_key=${userDb.userToken}",
-                        userDb.userPortal,
-                        it.folderId
-                    )
-                    if (response.isSuccessful) {
-                        val arrayListFiles = ArrayList(response.body()?.response?.files)
-                        val arrayListFolders =
-                            ArrayList(response.body()?.response?.folders)
-                        if (arrayListFiles.isNotEmpty() || arrayListFolders.isNotEmpty()) {
-                            adapterList.clear()
-                            for (file in arrayListFiles) {
-                                adapterList.add(
-                                    AdapterPojoObject(
-                                        file.title,
-                                        false,
-                                        true,
-                                        dateMonth(file.created.substring(0, 10)),
-                                        file.contentLength,
-                                        "none"
-                                    )
-                                )
-                            }
-                            for (file in arrayListFolders) {
-                                adapterList.add(
-                                    AdapterPojoObject(
-                                        file.title,
-                                        true,
-                                        false,
-                                        dateMonth(file.created.substring(0, 10)),
-                                        file.filesCount.toString(),
-                                        file.id.toString()
-                                    )
-                                )
-                            }
+                mPresenter!!.workingList(it, userDb, view)
+            }
+        }
+            return view
+    }
 
-                            GlobalScope.launch(Dispatchers.Main) {
-                                (activity as InfoActivity).supportActionBar?.title = it.name
-                                itemAdapter.notifyDataSetChanged()
-                            }
+    override fun onDestroy() {
+        super.onDestroy()
+        mPresenter = null
+    }
 
-                            Log.d("Magic", response.body().toString())
-                        } else {
-                            GlobalScope.launch(Dispatchers.Main) {
-                                Toast.makeText(
-                                    view.context,
-                                    "Thats an empty folder",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
-                    }
-                }
+    override fun cleanAdapterList() {
+        adapterList.clear()
+    }
+
+
+    override fun updateAdapterList(list: ArrayList<AdapterPojoObject>, toolBarName: String, view: View) {
+       cleanAdapterList()
+        Log.d("LISTadapter", list.toString())
+        adapterList = list
+       (activity as InfoActivity).supportActionBar?.title = toolBarName
+
+        itemAdapter = AdapterItems(adapterList)
+        view.rvItems.layoutManager = LinearLayoutManager(view.context)
+        view.rvItems.adapter = itemAdapter
+
+        itemAdapter.notifyDataSetChanged()
+        itemAdapter.setOnItemClickListener {
+            if (it.isFile) {
+                Toast.makeText(view.context, "${it.name} file size: ${it.size}", Toast.LENGTH_SHORT)
+                    .show()
+            } else {
+                var userDb = arguments?.getSerializable("userDb") as UserDb
+                mPresenter!!.workingList(it, userDb, view)
             }
         }
 
-
-        return view
     }
 
-    fun dateMonth(line: String): String {
-        val values = line
-        val lstValues: List<String> = values.split("-").map { it -> it.trim() }
-        val month = when (lstValues[1]) {
-            "1" -> "January"
-            "2" -> "February"
-            "3" -> "March"
-            "4" -> "April"
-            "5" -> "May"
-            "6" -> "June"
-            "7" -> "July"
-            "8" -> "August"
-            "9" -> "September"
-            "10" -> "October"
-            "11" -> "November"
-            "12" -> "December"
-            else -> "noInfo"
-        }
-        return "$month ${lstValues[2]}, ${lstValues[0]}"
+
+    override fun showText(message: String) {
+        Toast.makeText(view?.context, message, Toast.LENGTH_SHORT).show()
     }
 }

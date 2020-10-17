@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.mikepenz.materialdrawer.AccountHeader
@@ -54,14 +55,11 @@ class InfoActivity : AppCompatActivity() , MainContract.InfoView {
 
         mPresenter = InfoPresenter(this, sharedPreference)
 
-
         val userDb = intent.getSerializableExtra("user") as? UserDb
-        //textView.text = userDb.toString()
         var editor = sharedPreference.edit()
         editor.putString("access_auth", userDb?.userToken)
         editor.putString("host", userDb?.userPortal)
         editor.apply()
-
 
     }
 
@@ -71,36 +69,8 @@ class InfoActivity : AppCompatActivity() , MainContract.InfoView {
         initFields()
         initFunc()
         supportActionBar?.title = resources.getText(R.string.name_my_documents)
+        mPresenter?.start()
 
-        GlobalScope.launch(Dispatchers.Default) {
-            val sharedPreference =
-                getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
-            val ascAuthKey = sharedPreference.getString("access_auth", "null")
-            val host = sharedPreference.getString("host", "null").toString()
-            val response = RetrofitInstance.api.getMyDocuments(
-                "$host.onlyoffice.eu",
-                "asc_auth_key=$ascAuthKey",
-                host
-            )
-            if (response.isSuccessful) {
-                val arrayListFiles = ArrayList(response.body()?.response?.files)
-                val arrayListFolders =
-                    ArrayList(response.body()?.response?.folders)
-
-                val myDocucmentFragment =
-                    DocumentsFragment.getNewInstance(
-                        arrayListFiles,
-                        arrayListFolders,
-                        UserDb(host,ascAuthKey!!)
-                    )
-                supportFragmentManager.beginTransaction()
-                    .addToBackStack(null)
-                    .replace(
-                        R.id.frameLayout,
-                        myDocucmentFragment
-                    ).commit()
-            }
-        }
     }
 
     private fun initFunc() {
@@ -142,84 +112,19 @@ class InfoActivity : AppCompatActivity() , MainContract.InfoView {
                     position: Int,
                     drawerItem: IDrawerItem<*>
                 ): Boolean {
-                    //getapplicationContext потому что мы находимся в кликере (this если в самой активности как я понял)
-
                     when (position) {
-                        //addBackStack - чтобы потом можно было вернуться в основное активити
                         1 -> {
                             supportActionBar?.title = resources.getText(R.string.name_my_documents)
                             mPresenter?.navigationPresenterToMyDocuments()
-//                            GlobalScope.launch(Dispatchers.Default) {
-//                                val sharedPreference =
-//                                    getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
-//                                val ascAuthKey = sharedPreference.getString("access_auth", "null")
-//                                val host = sharedPreference.getString("host", "null").toString()
-//                                val response = RetrofitInstance.api.getMyDocuments(
-//                                    "$host.onlyoffice.eu",
-//                                    "asc_auth_key=$ascAuthKey",
-//                                    host
-//                                )
-//                                if (response.isSuccessful) {
-//                                    val arrayListFiles = ArrayList(response.body()?.response?.files)
-//                                    val arrayListFolders =
-//                                        ArrayList(response.body()?.response?.folders)
-//
-//                                    val myDocucmentFragment =
-//                                        DocumentsFragment.getNewInstance(
-//                                            arrayListFiles,
-//                                            arrayListFolders,
-//                                            UserDb(host,ascAuthKey!!)
-//                                        )
-//                                    supportFragmentManager.beginTransaction()
-//                                        .addToBackStack(null)
-//                                        .replace(
-//                                            R.id.frameLayout,
-//                                            myDocucmentFragment
-//                                        ).commit()
-//                                }
-
- //                           }
-
                         }
                         2 -> {
                             supportActionBar?.title = resources.getText(R.string.name_common_documents)
-                            GlobalScope.launch(Dispatchers.Default) {
-                                val sharedPreference =
-                                    getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
-                                val ascAuthKey = sharedPreference.getString("access_auth", "null")
-                                val host = sharedPreference.getString("host", "null").toString()
-                                val response = RetrofitInstance.api.getCommonDocuments(
-                                    "$host.onlyoffice.eu",
-                                    "asc_auth_key=$ascAuthKey",
-                                    host
-                                )
-                                if (response.isSuccessful) {
-                                    val arrayListFiles = ArrayList(response.body()?.response?.files)
-                                    val arrayListFolders =
-                                        ArrayList(response.body()?.response?.folders)
-
-                                    val myDocucmentFragment =
-                                        DocumentsFragment.getNewInstance(
-                                            arrayListFiles,
-                                            arrayListFolders,
-                                            UserDb(host,ascAuthKey!!)
-                                        )
-                                    supportFragmentManager.beginTransaction()
-                                        .addToBackStack(null)
-                                        .replace(
-                                            R.id.frameLayout,
-                                            myDocucmentFragment
-                                        ).commit()
-                                }
-                            }
+                            mPresenter?.navigationPresenterToCommonDocuments()
                         }
                         4 -> {
-                            intent = Intent(applicationContext, LoginActivity::class.java)
-                            startActivity(intent)
+                           navigationToLoginScreen()
                         }
-
                     }
-
                     return false
                 }
             }).build()
@@ -229,13 +134,9 @@ class InfoActivity : AppCompatActivity() , MainContract.InfoView {
 
     private fun createHeader() {
 
-       // mPresenter?.createHeader()
-
         val sharedPreference = getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
-        val ascAuthKey = sharedPreference.getString("access_auth", "null")
         val name = sharedPreference.getString("name", "name")
         val email = sharedPreference.getString("email", "email")
-        val url = sharedPreference.getString("imageUrl", "imageurl")
 
         currentProfile = ProfileDrawerItem()
             .withName(name)
@@ -251,11 +152,6 @@ class InfoActivity : AppCompatActivity() , MainContract.InfoView {
             ).build()
     }
 
-//    override fun startSelf() {
-//        TODO("Not yet implemented")
-//    }
-//
-//
     private fun initLoader() {
         DrawerImageLoader.init(object : AbstractDrawerImageLoader() {
 
@@ -299,7 +195,8 @@ class InfoActivity : AppCompatActivity() , MainContract.InfoView {
     }
 
     override fun navigationToLoginScreen() {
-
+        intent = Intent(applicationContext, LoginActivity::class.java)
+        startActivity(intent)
     }
 
     override fun navigationToMyDocuments(documentsFragment: DocumentsFragment) {
@@ -322,6 +219,11 @@ class InfoActivity : AppCompatActivity() , MainContract.InfoView {
     }
 
     override fun showText(message: String) {
-        TODO("Not yet implemented")
+       Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mPresenter = null
     }
 }

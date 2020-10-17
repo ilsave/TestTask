@@ -53,7 +53,10 @@ class LoginPresenter(val mView: MainContract.LoginView) :
                             mView.showText(response.message())
                         }
                     }
-                    mView.progressBarToINvisible()
+                    GlobalScope.launch(Dispatchers.Main) {
+                        mView.progressBarToINvisible()
+                    }
+
 
                     response.body()?.let {
                         Log.d("MainActivity", it.response.token)
@@ -77,7 +80,7 @@ class LoginPresenter(val mView: MainContract.LoginView) :
                         }
 
                         val userDb = UserDb(portalName, it.response.token)
-                        navigationToNextScreen(userDb)
+                        mView.navigationToNextScreen(userDb)
                       //  mView.navigationToNextScreen(userDb)
 
                     }
@@ -105,19 +108,6 @@ class LoginPresenter(val mView: MainContract.LoginView) :
         Log.d(TAG, "onDestroyd")
     }
 
-    override fun navigationToNextScreen(userDb: UserDb) {
-        mView.navigationToNextScreen(userDb)
-    }
 
-    override fun showText(message: String) {
-        mView.showText(message)
-    }
 
-    override fun progressBarToVisible() {
-        mView.progressBarToVisible()
-    }
-
-    override fun progressBarToINvisible() {
-        mView.progressBarToINvisible()
-    }
 }

@@ -16,7 +16,11 @@ class Repository() : MainContract.Repository {
     override suspend fun callGetMyDocuments(myHost: String, ascAuthKey: String, myportal: String ) =
         RetrofitInstance.api.getMyDocuments(myHost, ascAuthKey, myportal)
 
+    override suspend fun callGetCommonDocuments(myHost: String, ascAuthKey: String, myportal: String) =
+        RetrofitInstance.api.getCommonDocuments(myHost, ascAuthKey, myportal)
 
+    override suspend fun callGetFolderDocuments(myHost: String, ascAuthKey: String, myportal: String, idFolder: String) =
+        RetrofitInstance.api.getFolderDocuments(myHost, ascAuthKey, myportal, idFolder)
 
 
 }
